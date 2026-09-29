@@ -1,0 +1,68 @@
+{
+  "name": "thrustmaster-joystick-emulator",
+  "version": "0.1.0",
+  "description": "Stand-in for a joystick on Windows: an on-screen stick that drives a vJoy virtual joystick.",
+  "main": "src/main/main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "node scripts/fetch-win-koffi.js && electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "com.joystickemulator.app",
+    "productName": "Joystick Emulator",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "package.json",
+      "!node_modules/@koromix/koffi-darwin-*/**",
+      "!node_modules/@koromix/koffi-linux-*/**"
+    ],
+    "asarUnpack": [
+      "node_modules/koffi/**",
+      "node_modules/@koromix/**"
+    ],
+    "npmRebuild": false,
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portable.${ext}"
+    },
+    "toolsets": {
+      "nsis": "1.2.1",
+      "winCodeSign": "1.0.0"
+    }
+  },
+  "dependencies": {
+    "koffi": "^3.3.2"
+  },
+  "devDependencies": {
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3"
+  },
+  "author": "Fayaze Hassan"
+}

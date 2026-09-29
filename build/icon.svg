@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#252a33"/>
+      <stop offset="1" stop-color="#14161a"/>
+    </linearGradient>
+    <linearGradient id="knob" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7cb8ff"/>
+      <stop offset="1" stop-color="#3b82e0"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#bg)"/>
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="none" stroke="#3a404c" stroke-width="4"/>
+  <!-- base -->
+  <ellipse cx="256" cy="392" rx="150" ry="42" fill="#30343e"/>
+  <ellipse cx="256" cy="384" rx="150" ry="42" fill="#3d4350"/>
+  <!-- shaft -->
+  <path d="M240 384 L232 206 L280 206 L272 384 Z" fill="#8b919e"/>
+  <!-- grip -->
+  <rect x="206" y="96" width="100" height="140" rx="46" fill="url(#knob)"/>
+  <circle cx="256" cy="134" r="16" fill="#e6e8ec"/>
+  <!-- motion arcs -->
+  <path d="M150 170 A120 120 0 0 0 150 290" fill="none" stroke="#4f9cf7" stroke-width="14" stroke-linecap="round" opacity="0.55"/>
+  <path d="M362 170 A120 120 0 0 1 362 290" fill="none" stroke="#4f9cf7" stroke-width="14" stroke-linecap="round" opacity="0.55"/>
+</svg>

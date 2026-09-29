@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'" />
+    <title>Joystick Emulator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Joystick Emulator</h1>
+      <span id="backend" class="badge">…</span>
+      <nav class="tabs" role="tablist">
+        <button role="tab" data-tab-target="control" aria-selected="true">Control</button>
+        <button role="tab" data-tab-target="capture" aria-selected="false">Capture</button>
+      </nav>
+      <div class="spacer"></div>
+      <label for="device" class="full-only">vJoy device</label>
+      <select id="device" class="full-only"></select>
+      <button id="connect" class="primary">Connect</button>
+      <button id="overlay" title="Small, always-on-top window that doesn't take focus from the simulation">Overlay</button>
+    </header>
+
+    <p id="message" class="message" hidden></p>
+
+    <div data-tab="control">
+      <div class="toolbar full-only">
+        <span class="muted">Joystick profile:</span>
+        <span id="profile-name">none</span>
+        <button id="profile-load">Load profile…</button>
+        <button id="profile-clear" hidden>Remove</button>
+      </div>
+      <p id="profile-warning" class="message warn" hidden></p>
+
+      <main id="controls" class="grid" data-disabled="true">
+        <section class="card">
+          <div class="card-head">
+            <h2>Stick</h2>
+            <label class="check"><input type="checkbox" id="self-centre" checked /> Self-centre</label>
+          </div>
+          <div id="pad" class="pad" aria-label="Stick X/Y">
+            <div class="crosshair"></div>
+            <div id="knob" class="knob"></div>
+          </div>
+          <div class="readout"><span>X <b id="x-val">0.50</b></span><span>Y <b id="y-val">0.50</b></span></div>
+          <div id="twist-row" class="axis-row">
+            <label for="axis-Rz" id="twist-label">Twist (Rz)</label>
+            <input type="range" id="axis-Rz" min="0" max="1" step="0.001" value="0.5" />
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><h2>Axes</h2></div>
+          <div id="axes" class="vsliders"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><h2>Hat</h2></div>
+          <div id="hat" class="hat"></div>
+          <div class="card-head"><h2>Buttons</h2></div>
+          <div id="buttons" class="buttons"></div>
+        </section>
+      </main>
+
+      <footer class="hint full-only">
+        Keyboard (while this window is focused): <kbd>W A S D</kbd> / arrows move the stick · <kbd>Q</kbd> <kbd>E</kbd> twist ·
+        <kbd>1</kbd>–<kbd>0</kbd> buttons 1–10 · <kbd>I J K L</kbd> hat. Use <b>Overlay</b> to keep the simulation focused while you fly.
+      </footer>
+    </div>
+
+    <div data-tab="capture" hidden>
+      <div class="toolbar">
+        <button id="hid-choose" class="primary">Choose joystick…</button>
+        <span id="hid-name" class="muted">No joystick selected</span>
+        <div class="spacer"></div>
+        <button id="hid-order" hidden>Try other field order</button>
+        <label class="check" title="Needs a vJoy device connected in the top bar">
+          <input type="checkbox" id="hid-mirror" /> Mirror to vJoy
+        </label>
+        <button id="hid-save" disabled>Save profile…</button>
+      </div>
+
+      <div id="hid-picker" class="picker" hidden>
+        <div class="card-head"><h2>Choose a joystick</h2><button id="hid-picker-cancel">Cancel</button></div>
+        <ul id="hid-picker-list"></ul>
+      </div>
+
+      <p id="hid-warning" class="message" hidden></p>
+
+      <div class="capture-grid">
+        <section class="card">
+          <div class="card-head"><h2>Axes &amp; hats</h2><span id="hid-rate" class="muted"></span></div>
+          <table class="fields">
+            <thead><tr><th>Control</th><th>Usage</th><th>Bits</th><th>Range</th><th>vJoy</th><th>Live</th></tr></thead>
+            <tbody id="hid-fields"><tr><td colspan="6" class="empty">Choose a joystick to see its controls.</td></tr></tbody>
+          </table>
+          <div class="card-head"><h2>Buttons</h2></div>
+          <div id="hid-buttons" class="leds"></div>
+        </section>
+        <div class="side">
+          <section class="card">
+            <h2>vJoy setup to match</h2>
+            <ul id="hid-vjoy" class="setup"><li class="empty">—</li></ul>
+          </section>
+          <section class="card">
+            <h2>Last raw report</h2>
+            <code id="hid-raw" class="raw">—</code>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script src="hid-layout.js"></script>
+    <script src="renderer.js"></script>
+    <script src="capture.js"></script>
+  </body>
+</html>
