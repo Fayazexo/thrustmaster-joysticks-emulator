@@ -676,6 +676,7 @@ function setProfile(p) {
     : 'Optional. Load the profile saved from Capture to name the controls after the real joystick and check vJoy matches it.';
   els.profileClear.hidden = !p;
   els.stProfile.textContent = p ? p.device.productName : 'None';
+  if (p && identityInfo?.supported && !idEls.name.value) renderIdentity();
   if (device) buildControls();
   checkProfile();
   renderPreflight();
@@ -697,6 +698,71 @@ els.profileClear.addEventListener('click', async () => {
 
 // The Capture tab saves profiles; pick them up here.
 window.addEventListener('profile-saved', (e) => setProfile(e.detail));
+
+// ---- Present as: the name Windows reports for vJoy -----------------------------------
+
+const idEls = {
+  state: $('identity-state'),
+  name: $('identity-name'),
+  apply: $('identity-apply'),
+  restore: $('identity-restore'),
+  note: $('identity-note'),
+  message: $('identity-message'),
+};
+let identityInfo = null;
+
+function renderIdentity() {
+  const info = identityInfo;
+  const supported = Boolean(info?.supported);
+  idEls.name.disabled = !supported;
+  idEls.apply.disabled = !supported;
+  if (!supported) {
+    idEls.state.textContent = 'Windows only';
+    return;
+  }
+  idEls.state.textContent = info.current;
+  idEls.restore.hidden = !('original' in info) || info.original === undefined;
+  if (!idEls.name.value) idEls.name.value = profile?.device.productName ?? '';
+  const pending = idEls.name.value.trim() && idEls.name.value.trim() !== info.current;
+  idEls.apply.classList.toggle('primary', Boolean(pending));
+}
+
+async function loadIdentity() {
+  identityInfo = await window.identity.get();
+  renderIdentity();
+}
+
+idEls.name.addEventListener('input', renderIdentity);
+idEls.name.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') idEls.apply.click();
+});
+
+idEls.apply.addEventListener('click', async () => {
+  showAlert(idEls.message, null);
+  try {
+    const current = await window.identity.set(idEls.name.value);
+    showAlert(idEls.message, `Now reporting "${current}"`, [
+      'Close and reopen the simulation so it sees the new name.',
+      'Check in joy.cpl (Win+R → joy.cpl): vJoy should be listed under this name.',
+      'If the simulation still ignores it, it checks the USB IDs, and you need the hardware route.',
+    ]);
+  } catch (err) {
+    showAlert(idEls.message, 'Could not change the name', cleanError(err));
+  }
+  await loadIdentity();
+});
+
+idEls.restore.addEventListener('click', async () => {
+  showAlert(idEls.message, null);
+  try {
+    const current = await window.identity.restore();
+    idEls.name.value = '';
+    showAlert(idEls.message, `Restored "${current}"`, 'Restart the simulation to pick it up.');
+  } catch (err) {
+    showAlert(idEls.message, 'Could not restore the name', cleanError(err));
+  }
+  await loadIdentity();
+});
 
 // ---- Preflight: what's left before the stick goes live -----------------------------
 
@@ -895,6 +961,7 @@ async function init() {
   buildHat();
   buildButtons();
   await refresh();
+  await loadIdentity();
 
   // Reconnect to the device used last time, so launching the app is all it takes.
   const last = devices.find((d) => d.id === settings.deviceId);

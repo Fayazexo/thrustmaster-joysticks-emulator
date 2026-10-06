@@ -23,6 +23,12 @@ contextBridge.exposeInMainWorld('profiles', {
   clear: () => ipcRenderer.invoke('profile:clear'),
 });
 
+contextBridge.exposeInMainWorld('identity', {
+  get: () => ipcRenderer.invoke('identity:get'),
+  set: (name) => ipcRenderer.invoke('identity:set', name),
+  restore: () => ipcRenderer.invoke('identity:restore'),
+});
+
 contextBridge.exposeInMainWorld('hidChooser', {
   onChoose: (cb) => ipcRenderer.on('hid:choose', (_e, list) => cb(list)),
   choose: (deviceId) => ipcRenderer.send('hid:chosen', deviceId),

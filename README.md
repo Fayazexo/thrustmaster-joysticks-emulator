@@ -45,6 +45,10 @@ From then on, the app reconnects to the same vJoy device and remembers the profi
 
 **Mirror to vJoy** (Capture tab) copies a real joystick onto vJoy live. With vJoy installed on the same PC, it's a quick way to confirm the simulation behaves the same with vJoy as with the real stick.
 
+## Simulation only accepts the real joystick?
+
+Some simulations look for a specific joystick by name. In the Control tab, **Present as** makes vJoy report the real joystick's name. It's pre-filled from your profile: click **Apply**, then restart the simulation and check `joy.cpl`. **Restore original name** undoes it. This changes a per-user Windows registry value only. The USB IDs stay vJoy's (`1234:BEAD`), so a simulation that checks IDs needs a hardware clone instead.
+
 ## Troubleshooting
 
 | Message | Fix |

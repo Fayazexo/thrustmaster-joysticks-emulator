@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const store = require('./store');
+const identity = require('./identity');
 
 const VJOY_DOWNLOAD = 'https://github.com/jshafer817/vJoy/releases';
 
@@ -124,6 +125,30 @@ function registerIpc() {
   });
 
   ipcMain.handle('settings:get', () => store.settings.get());
+
+  // "Present as": the joystick name Windows reports for vJoy devices.
+  ipcMain.handle('identity:get', async () => {
+    if (process.platform !== 'win32') return { supported: false };
+    const current = await identity.getName();
+    return { supported: true, current: current ?? identity.VJOY_DEFAULT, original: store.settings.get().originalOemName };
+  });
+
+  ipcMain.handle('identity:set', async (_e, name) => {
+    if (process.platform !== 'win32') throw new Error('Only available on Windows.');
+    // Remember what was there before the first change, so it can be restored.
+    if (!('originalOemName' in store.settings.get())) {
+      store.settings.update({ originalOemName: await identity.getName() });
+    }
+    return identity.setName(name);
+  });
+
+  ipcMain.handle('identity:restore', async () => {
+    if (process.platform !== 'win32') throw new Error('Only available on Windows.');
+    const { originalOemName } = store.settings.get();
+    const current = originalOemName ? await identity.setName(originalOemName) : await identity.clearName();
+    store.settings.update({ originalOemName: undefined });
+    return current ?? identity.VJOY_DEFAULT;
+  });
 
   ipcMain.handle('window:overlay', (_e, on) => setOverlay(Boolean(on)));
 

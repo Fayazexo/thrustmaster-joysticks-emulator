@@ -152,6 +152,14 @@ body.mac .titlebar { padding-left: 84px; }
 .select select:disabled { border-style: dashed; cursor: not-allowed; }
 .select::after { content: ''; position: absolute; right: 12px; top: 50%; width: 10px; height: 6px; margin-top: -3px; background: var(--lumin); clip-path: polygon(0 0, 100% 0, 50% 100%); pointer-events: none; }
 .row { display: flex; gap: 8px; align-items: stretch; }
+.input {
+  flex: 1; min-width: 0; height: 44px; padding: 0 12px;
+  background: var(--void); color: var(--lumin); border: 1px solid var(--lumin); border-radius: 0;
+  font: 400 13px var(--text); user-select: text;
+}
+.input::placeholder { color: var(--lumin); opacity: 0.6; }
+.input:disabled { border-style: dashed; cursor: not-allowed; }
+.input:focus-visible { outline: 1px solid var(--lumin); outline-offset: 3px; }
 
 /* ---------- Alerts ---------- */
 
@@ -316,6 +324,7 @@ kbd { font-family: var(--pixel); font-size: 11px; border: 1px solid var(--lumin)
 }
 body.overlay .mark .word, body.overlay .status .readout:not(.always), body.overlay .wide-only, body.overlay .tabs { display: none !important; }
 body.overlay .profile-module,
+body.overlay .identity-module,
 body.overlay .stage-head > .lbl,
 body.overlay [data-live='true'] .link-module { display: none; }
 body.overlay .stage-foot .val { font-size: 22px; }

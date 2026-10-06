@@ -87,6 +87,17 @@
           <div class="alert" id="profile-warning" role="alert" hidden></div>
         </section>
 
+        <section class="module identity-module">
+          <div class="module-head"><span class="lbl">Present as</span><span class="num" id="identity-state">—</span></div>
+          <div class="row">
+            <input class="input" id="identity-name" type="text" maxlength="64" spellcheck="false" aria-label="Joystick name to report" placeholder="e.g. T.16000M" />
+            <button class="btn" id="identity-apply">Apply</button>
+          </div>
+          <p class="note" id="identity-note">Makes vJoy show up in games under the real joystick's name. Use the exact name joy.cpl shows for the real joystick. Restart the simulation afterwards.</p>
+          <button class="btn small" id="identity-restore" hidden>Restore original name</button>
+          <div class="alert" id="identity-message" role="alert" hidden></div>
+        </section>
+
         <section class="module needs-link" id="axes-module">
           <div class="module-head"><span class="lbl">Axes</span></div>
           <div id="axes"></div>
