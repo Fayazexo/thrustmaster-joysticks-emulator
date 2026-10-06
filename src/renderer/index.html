@@ -7,108 +7,165 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header class="topbar">
-      <h1>Joystick Emulator</h1>
-      <span id="backend" class="badge">…</span>
-      <nav class="tabs" role="tablist">
-        <button role="tab" data-tab-target="control" aria-selected="true">Control</button>
-        <button role="tab" data-tab-target="capture" aria-selected="false">Capture</button>
+    <header class="titlebar">
+      <div class="mark"><i aria-hidden="true"></i><span class="pixel word">Joystick Emulator</span></div>
+      <nav class="tabs" role="tablist" aria-label="View">
+        <button class="tab" role="tab" data-tab-target="control" aria-selected="true">Control</button>
+        <button class="tab" role="tab" data-tab-target="capture" aria-selected="false">Capture</button>
       </nav>
-      <div class="spacer"></div>
-      <label for="device" class="full-only">vJoy device</label>
-      <select id="device" class="full-only"></select>
-      <button id="connect" class="primary">Connect</button>
-      <button id="overlay" title="Small, always-on-top window that doesn't take focus from the simulation">Overlay</button>
+      <div class="status" aria-live="polite">
+        <div class="readout always" id="st-link-box"><span class="lbl">Link</span><span class="num" id="st-link">Offline</span></div>
+        <div class="readout wide-only"><span class="lbl">Device</span><span class="num" id="st-device">—</span></div>
+        <div class="readout wide-only"><span class="lbl">Profile</span><span class="num" id="st-profile">None</span></div>
+        <div class="readout always"><span class="lbl">Tx</span><span class="num" id="st-tx">000/s</span></div>
+      </div>
+      <button id="overlay" class="tb-btn" aria-pressed="false" title="Pin: small window that stays on top and doesn't take focus from the simulation">Pin</button>
     </header>
 
-    <p id="message" class="message" hidden></p>
+    <!-- ============ CONTROL ============ -->
+    <main class="view" data-view="control" data-live="false">
+      <section class="stage">
+        <div class="stage-head">
+          <span class="val" id="stage-state">Offline</span>
+          <span class="spacer"></span>
+          <span class="lbl">Self-centre</span>
+          <button class="switch" id="self-centre" role="switch" aria-checked="true" aria-label="Self-centre stick and twist">
+            <span class="pixel off">Off</span><span class="pixel on">On</span>
+          </button>
+          <button class="btn small" id="centre">Centre</button>
+        </div>
 
-    <div data-tab="control">
-      <div class="toolbar full-only">
-        <span class="muted">Joystick profile:</span>
-        <span id="profile-name">none</span>
-        <button id="profile-load">Load profile…</button>
-        <button id="profile-clear" hidden>Remove</button>
-      </div>
-      <p id="profile-warning" class="message warn" hidden></p>
+        <div class="field-wrap" id="field-wrap">
+          <div class="field" id="field" tabindex="0" role="slider" aria-label="Stick X and Y. Drag, or use arrow keys. Shift for fine control." aria-valuetext="X +0.000, Y +0.000">
+            <canvas id="field-canvas"></canvas>
+            <span class="field-scale t">-Y</span><span class="field-scale b">+Y</span>
+            <span class="field-scale l">-X</span><span class="field-scale r">+X</span>
 
-      <main id="controls" class="grid" data-disabled="true">
-        <section class="card">
-          <div class="card-head">
-            <h2>Stick</h2>
-            <label class="check"><input type="checkbox" id="self-centre" checked /> Self-centre</label>
+            <div class="preflight" id="preflight">
+              <div class="preflight-head">
+                <span class="lbl">Preflight</span>
+                <span class="val" id="preflight-title">Checking vJoy…</span>
+              </div>
+              <ol class="steps" id="steps"></ol>
+              <div class="preflight-actions">
+                <button class="btn primary" id="preflight-connect" disabled>Connect</button>
+                <button class="btn" id="preflight-recheck">Check again</button>
+              </div>
+            </div>
           </div>
-          <div id="pad" class="pad" aria-label="Stick X/Y">
-            <div class="crosshair"></div>
-            <div id="knob" class="knob"></div>
+        </div>
+
+        <div class="stage-foot">
+          <div class="readout"><span class="lbl">X · roll</span><span class="val" id="x-val">+0.000</span></div>
+          <div class="readout"><span class="lbl">Y · pitch</span><span class="val" id="y-val">+0.000</span></div>
+          <div class="readout" id="rz-readout"><span class="lbl">Rz · twist</span><span class="val" id="rz-val">+0.000</span></div>
+          <div class="trace wide-only" aria-hidden="true"><canvas id="trace"></canvas></div>
+          <div class="readout wide-only"><span class="lbl">Fine</span><span class="num">Hold Shift</span></div>
+        </div>
+      </section>
+
+      <aside class="column">
+        <section class="module link-module">
+          <div class="module-head"><span class="lbl">vJoy link</span><span class="num" id="link-state">Offline</span></div>
+          <div class="row">
+            <div class="select"><select id="device" aria-label="vJoy device"></select></div>
+            <button class="btn" id="connect">Connect</button>
           </div>
-          <div class="readout"><span>X <b id="x-val">0.50</b></span><span>Y <b id="y-val">0.50</b></span></div>
-          <div id="twist-row" class="axis-row">
-            <label for="axis-Rz" id="twist-label">Twist (Rz)</label>
-            <input type="range" id="axis-Rz" min="0" max="1" step="0.001" value="0.5" />
-          </div>
+          <div class="alert" id="message" role="alert" hidden></div>
         </section>
 
-        <section class="card">
-          <div class="card-head"><h2>Axes</h2></div>
-          <div id="axes" class="vsliders"></div>
+        <section class="module profile-module">
+          <div class="module-head">
+            <span class="lbl">Profile</span>
+            <span class="row">
+              <button class="btn small" id="profile-load">Load…</button>
+              <button class="btn small" id="profile-clear" hidden>Remove</button>
+            </span>
+          </div>
+          <div><span class="val" id="profile-name">None</span></div>
+          <p class="note" id="profile-note">Optional. Load the profile saved from Capture to name the controls after the real joystick and check vJoy matches it.</p>
+          <div class="alert" id="profile-warning" role="alert" hidden></div>
         </section>
 
-        <section class="card">
-          <div class="card-head"><h2>Hat</h2></div>
-          <div id="hat" class="hat"></div>
-          <div class="card-head"><h2>Buttons</h2></div>
-          <div id="buttons" class="buttons"></div>
+        <section class="module needs-link" id="axes-module">
+          <div class="module-head"><span class="lbl">Axes</span></div>
+          <div id="axes"></div>
         </section>
-      </main>
 
-      <footer class="hint full-only">
-        Keyboard (while this window is focused): <kbd>W A S D</kbd> / arrows move the stick · <kbd>Q</kbd> <kbd>E</kbd> twist ·
-        <kbd>1</kbd>–<kbd>0</kbd> buttons 1–10 · <kbd>I J K L</kbd> hat. Use <b>Overlay</b> to keep the simulation focused while you fly.
-      </footer>
-    </div>
+        <section class="module needs-link">
+          <div class="module-head"><span class="lbl">Hat · buttons</span></div>
+          <div class="pads">
+            <div class="hat" id="hat"></div>
+            <div class="cells" id="buttons"></div>
+          </div>
+          <p class="hint">Hold to press. Right-click or double-tap to latch a button on, so it stays held while you move the stick.</p>
+        </section>
 
-    <div data-tab="capture" hidden>
-      <div class="toolbar">
-        <button id="hid-choose" class="primary">Choose joystick…</button>
-        <span id="hid-name" class="muted">No joystick selected</span>
-        <div class="spacer"></div>
-        <button id="hid-order" hidden>Try other field order</button>
-        <label class="check" title="Needs a vJoy device connected in the top bar">
-          <input type="checkbox" id="hid-mirror" /> Mirror to vJoy
-        </label>
-        <button id="hid-save" disabled>Save profile…</button>
-      </div>
+        <section class="module wide-only">
+          <div class="module-head"><span class="lbl">Keys</span><span class="num">While focused</span></div>
+          <div class="keys">
+            <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span>Stick (or arrows)</span>
+            <span><kbd>Q</kbd><kbd>E</kbd></span><span>Twist</span>
+            <span><kbd>1</kbd>–<kbd>0</kbd></span><span>Buttons 1–10</span>
+            <span><kbd>I</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd></span><span>Hat</span>
+          </div>
+        </section>
+      </aside>
+    </main>
 
-      <div id="hid-picker" class="picker" hidden>
-        <div class="card-head"><h2>Choose a joystick</h2><button id="hid-picker-cancel">Cancel</button></div>
-        <ul id="hid-picker-list"></ul>
-      </div>
+    <!-- ============ CAPTURE ============ -->
+    <main class="view" data-view="capture" hidden>
+      <section class="stage">
+        <div class="stage-head">
+          <button class="btn small" id="hid-choose">Choose joystick…</button>
+          <span class="num" id="hid-name">No joystick selected</span>
+          <span class="spacer"></span>
+          <span class="num" id="hid-rate"></span>
+        </div>
+        <div class="cap-scroll">
+          <div class="picker" id="hid-picker" hidden>
+            <div class="cap-section"><span class="lbl">Choose a joystick</span><button class="btn small" id="hid-picker-cancel">Cancel</button></div>
+            <div id="hid-picker-list" class="picker-list"></div>
+          </div>
+          <div class="module" id="hid-warning-box" hidden><div class="alert" id="hid-warning" role="alert"></div></div>
 
-      <p id="hid-warning" class="message" hidden></p>
-
-      <div class="capture-grid">
-        <section class="card">
-          <div class="card-head"><h2>Axes &amp; hats</h2><span id="hid-rate" class="muted"></span></div>
+          <div class="cap-section"><span class="lbl">Axes · hats</span></div>
           <table class="fields">
             <thead><tr><th>Control</th><th>Usage</th><th>Bits</th><th>Range</th><th>vJoy</th><th>Live</th></tr></thead>
-            <tbody id="hid-fields"><tr><td colspan="6" class="empty">Choose a joystick to see its controls.</td></tr></tbody>
+            <tbody id="hid-fields"><tr><td colspan="6">Plug in the joystick and choose it above. Then move every control and watch it here.</td></tr></tbody>
           </table>
-          <div class="card-head"><h2>Buttons</h2></div>
-          <div id="hid-buttons" class="leds"></div>
-        </section>
-        <div class="side">
-          <section class="card">
-            <h2>vJoy setup to match</h2>
-            <ul id="hid-vjoy" class="setup"><li class="empty">—</li></ul>
-          </section>
-          <section class="card">
-            <h2>Last raw report</h2>
-            <code id="hid-raw" class="raw">—</code>
-          </section>
+          <div class="cap-section"><span class="lbl">Buttons</span></div>
+          <div class="cap-buttons"><div class="cells" id="hid-buttons"></div></div>
         </div>
-      </div>
-    </div>
+      </section>
+
+      <aside class="column">
+        <section class="module">
+          <div class="module-head"><span class="lbl">vJoy setup to match</span></div>
+          <dl class="datalist" id="hid-vjoy"><dt>Axes</dt><dd>—</dd><dt>Buttons</dt><dd>—</dd><dt>POV hats</dt><dd>—</dd></dl>
+          <p class="note">Enter these in Configure vJoy, device 1, on the PC where you'll fly.</p>
+        </section>
+        <section class="module">
+          <div class="module-head"><span class="lbl">Profile</span></div>
+          <button class="btn primary block" id="hid-save" disabled>Save profile…</button>
+          <p class="note" id="hid-saved">Saves the joystick's layout, to load on the other PC.</p>
+          <button class="btn small" id="hid-order" hidden>Values scrambled? Swap field order</button>
+        </section>
+        <section class="module">
+          <div class="switch-row">
+            <span class="lbl">Mirror to vJoy</span>
+            <button class="switch" id="hid-mirror" role="switch" aria-checked="false" aria-label="Mirror the real joystick to vJoy">
+              <span class="pixel off">Off</span><span class="pixel on">On</span>
+            </button>
+          </div>
+          <p class="note">Copies the real joystick onto the connected vJoy device live. Use it to confirm the simulation behaves the same with vJoy.</p>
+        </section>
+        <section class="module">
+          <div class="module-head"><span class="lbl">Last raw report</span></div>
+          <div class="raw" id="hid-raw">—</div>
+        </section>
+      </aside>
+    </main>
 
     <script src="hid-layout.js"></script>
     <script src="renderer.js"></script>

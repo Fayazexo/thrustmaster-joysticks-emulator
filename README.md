@@ -36,10 +36,12 @@ From then on, the app reconnects to the same vJoy device and remembers the profi
 
 ## Flying
 
-- **Overlay** makes the window small and always on top, and clicks on it don't take focus from the simulation. Use it while flying: many simulations only read joysticks while their own window is active.
-- Drag the pad for X/Y. With **Self-centre** on, it springs back when released. The twist slider is Rz. Other axes, such as the throttle, appear as sliders named after the real joystick's controls.
-- Hold the hat and button tiles to press them.
-- The keyboard works in the normal window only, since it needs focus: `WASD`/arrows for the stick, `Q`/`E` twist, `1`–`0` buttons, `IJKL` hat.
+- Until vJoy is connected, a **Preflight** checklist inside the stick area shows what's left to do, with the exact Configure vJoy steps.
+- **Pin** (top-right) makes the window small and always on top, and clicks on it don't take focus from the simulation. **Unpin** restores it.
+- Drag the stick area for X/Y. Hold **Shift** for fine control; double-click or **Centre** to recentre. With **Self-centre** on, it springs back when released. The Twist slider is Rz; other axes, such as the throttle, are named after the real joystick's controls.
+- Hold a hat or button cell to press it. **Right-click or double-tap** latches it on, so it stays held while you move the stick.
+- The title bar always shows **LINK** (inverted when live) and **TX**, the number of updates sent to vJoy per second.
+- The keyboard works only while the window is focused: `WASD` stick, `Q`/`E` twist, `1`–`0` buttons, `IJKL` hat, and arrow keys nudge the stick when it's focused.
 
 **Mirror to vJoy** (Capture tab) copies a real joystick onto vJoy live. With vJoy installed on the same PC, it's a quick way to confirm the simulation behaves the same with vJoy as with the real stick.
 

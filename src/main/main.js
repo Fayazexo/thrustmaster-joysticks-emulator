@@ -46,7 +46,7 @@ function releaseDevice() {
 // ---- Overlay mode: small, always on top, and (on Windows) never takes focus, so
 // the simulation keeps receiving input while you drag the on-screen stick.
 
-const NORMAL_MIN = { width: 820, height: 600 };
+const NORMAL_MIN = { width: 360, height: 520 };
 const OVERLAY_SIZE = { width: 380, height: 760 };
 
 function setOverlay(on) {
@@ -191,8 +191,14 @@ function createWindow() {
     minWidth: NORMAL_MIN.width,
     minHeight: NORMAL_MIN.height,
     title: 'Joystick Emulator',
-    backgroundColor: '#14161a',
+    backgroundColor: '#000000',
     show: false,
+    // The app draws its own title bar; the OS keeps only the window buttons.
+    titleBarStyle: 'hidden',
+    titleBarOverlay: process.platform === 'darwin'
+      ? true
+      : { color: '#000000', symbolColor: '#ffffff', height: 44 },
+    trafficLightPosition: { x: 14, y: 15 },
     webPreferences: {
       preload: path.join(__dirname, '..', 'preload', 'preload.js'),
       contextIsolation: true,
