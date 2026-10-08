@@ -126,6 +126,13 @@ function registerIpc() {
 
   ipcMain.handle('settings:get', () => store.settings.get());
 
+  // The vJoy axis the on-screen twist control drives.
+  ipcMain.handle('settings:twist-axis', (_e, axis) => {
+    const allowed = ['Z', 'Rx', 'Ry', 'Rz', 'Slider0', 'Slider1'];
+    if (!allowed.includes(axis)) throw new Error(`Invalid axis: ${axis}`);
+    store.settings.update({ twistAxis: axis });
+  });
+
   // "Present as": the joystick name Windows reports for vJoy devices.
   ipcMain.handle('identity:get', async () => {
     if (process.platform !== 'win32') return { supported: false };

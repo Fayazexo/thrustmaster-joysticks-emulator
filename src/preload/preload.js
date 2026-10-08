@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('vjoy', {
 
 contextBridge.exposeInMainWorld('app', {
   settings: () => ipcRenderer.invoke('settings:get'),
+  setTwistAxis: (axis) => ipcRenderer.invoke('settings:twist-axis', axis),
   setOverlay: (on) => ipcRenderer.invoke('window:overlay', on),
   onOverlay: (cb) => ipcRenderer.on('window:overlay', (_e, on) => cb(on)),
 });

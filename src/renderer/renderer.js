@@ -26,6 +26,10 @@ const els = {
   yVal: $('y-val'),
   rzVal: $('rz-val'),
   rzReadout: $('rz-readout'),
+  rzLabel: $('rz-label'),
+  twistPick: $('twist-pick'),
+  twistSelect: $('twist-axis'),
+  twistNote: $('twist-note'),
   device: $('device'),
   connect: $('connect'),
   linkState: $('link-state'),
@@ -46,6 +50,11 @@ const els = {
 // Throttle-like axes rest at 0; the others are centred.
 const VJOY_AXIS_ORDER = ['Rz', 'Z', 'Rx', 'Ry', 'Slider0', 'Slider1'];
 const CENTRED = new Set(['Rz', 'Rx', 'Ry']);
+
+// The vJoy axis the twist control drives. Rz by default; some simulations read twist
+// from another axis (e.g. Slider), so it's selectable and remembered.
+let preferredTwist = 'Rz';
+let twistAxis = 'Rz';
 
 // Hat grid, row by row; null is the empty centre cell.
 const HAT_CELLS = [315, 0, 45, 270, null, 90, 225, 180, 135];
@@ -363,7 +372,7 @@ els.selfCentre.addEventListener('click', () => toggleSwitch(els.selfCentre));
 
 els.centre.addEventListener('click', () => {
   setStick(0.5, 0.5);
-  sliders.Rz?.set(0.5);
+  sliders[twistAxis]?.set(0.5);
 });
 
 // ---- Sliders -------------------------------------------------------------------
@@ -406,7 +415,7 @@ function makeSlider({ axis, label, sub, rest, centred }) {
     track.setAttribute('aria-valuetext', format(value));
     output.textContent = format(value);
     out.axis(axis, value);
-    if (axis === 'Rz') els.rzVal.textContent = signed(value);
+    if (axis === twistAxis) els.rzVal.textContent = signed(value);
   }
 
   const fromPointer = (e) => {
@@ -422,7 +431,7 @@ function makeSlider({ axis, label, sub, rest, centred }) {
     if (track.hasPointerCapture(e.pointerId)) set(fromPointer(e));
   });
   const release = () => {
-    if (centred && axis === 'Rz' && selfCentre()) set(0.5);
+    if (axis === twistAxis && selfCentre()) set(0.5);
   };
   track.addEventListener('pointerup', release);
   track.addEventListener('pointercancel', release);
@@ -446,10 +455,29 @@ function makeSlider({ axis, label, sub, rest, centred }) {
   return { el: wrap, set, get: () => value };
 }
 
+function renderTwistPicker(available) {
+  els.twistPick.hidden = available.length < 2;
+  els.twistNote.hidden = available.length < 2;
+  els.twistSelect.replaceChildren(...available.map((a) => new Option(vjoyConfName(a), a)));
+  els.twistSelect.value = twistAxis;
+  els.rzLabel.textContent = `${vjoyConfName(twistAxis)} · twist`;
+}
+
+els.twistSelect.addEventListener('change', async () => {
+  preferredTwist = els.twistSelect.value;
+  await window.app.setTwistAxis(preferredTwist);
+  // Rebuilding sends every axis its rest value for its new role.
+  buildControls();
+});
+
 function buildSliders() {
   els.axes.replaceChildren();
   for (const k of Object.keys(sliders)) delete sliders[k];
-  const present = VJOY_AXIS_ORDER.filter((a) => hasAxis(a));
+  const available = VJOY_AXIS_ORDER.filter((a) => hasAxis(a));
+  twistAxis = available.includes(preferredTwist) ? preferredTwist : available.includes('Rz') ? 'Rz' : available[0] ?? 'Rz';
+  // The twist control comes first, then the remaining axes in order.
+  const present = available.length ? [twistAxis, ...available.filter((a) => a !== twistAxis)] : [];
+  renderTwistPicker(available);
   if (!present.length) {
     els.axes.innerHTML = device
       ? '<p class="empty">This vJoy device has no axes besides X and Y.</p>'
@@ -461,9 +489,11 @@ function buildSliders() {
   for (const axis of present) {
     const real = profileAxisName(axis);
     const conf = vjoyConfName(axis);
-    const label = axis === 'Rz' ? 'Twist' : real ?? conf;
+    const isTwist = axis === twistAxis;
+    const label = isTwist ? 'Twist' : real ?? conf;
     const sub = label.toLowerCase() === conf.toLowerCase() ? null : `· ${conf}`;
-    const s = makeSlider({ axis, label, sub, rest: CENTRED.has(axis) ? 0.5 : 0, centred: CENTRED.has(axis) });
+    const centred = isTwist || CENTRED.has(axis);
+    const s = makeSlider({ axis, label, sub, rest: centred ? 0.5 : 0, centred });
     sliders[axis] = s;
     els.axes.append(s.el);
   }
@@ -572,8 +602,8 @@ function buildButtons() {
 
 function buildControls() {
   for (const k of Object.keys(axisValues)) delete axisValues[k];
-  els.rzReadout.hidden = Boolean(device) && !hasAxis('Rz');
   buildSliders();
+  els.rzReadout.hidden = Boolean(device) && !hasAxis(twistAxis);
   buildHat();
   buildButtons();
   stick.trail = [];
@@ -590,7 +620,7 @@ const HAT_KEYS = { KeyI: [0, -1], KeyK: [0, 1], KeyJ: [-1, 0], KeyL: [1, 0] };
 function applyKeyboardStick(code) {
   if (['KeyQ', 'KeyE'].includes(code)) {
     const dz = (keys.has('KeyE') ? 1 : 0) - (keys.has('KeyQ') ? 1 : 0);
-    if (dz || selfCentre()) sliders.Rz?.set(0.5 + dz * 0.5);
+    if (dz || selfCentre()) sliders[twistAxis]?.set(0.5 + dz * 0.5);
     return;
   }
   const dx = (keys.has('KeyD') ? 1 : 0) - (keys.has('KeyA') ? 1 : 0);
@@ -955,6 +985,7 @@ async function refresh() {
 
 async function init() {
   const [settings, savedProfile] = await Promise.all([window.app.settings(), window.profiles.get()]);
+  preferredTwist = settings.twistAxis ?? 'Rz';
   applyOverlay(Boolean(settings.overlay));
   setProfile(savedProfile);
   buildSliders();

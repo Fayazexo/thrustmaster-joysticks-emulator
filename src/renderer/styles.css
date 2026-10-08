@@ -152,6 +152,9 @@ body.mac .titlebar { padding-left: 84px; }
 .select select:disabled { border-style: dashed; cursor: not-allowed; }
 .select::after { content: ''; position: absolute; right: 12px; top: 50%; width: 10px; height: 6px; margin-top: -3px; background: var(--lumin); clip-path: polygon(0 0, 100% 0, 50% 100%); pointer-events: none; }
 .row { display: flex; gap: 8px; align-items: stretch; }
+.twist-pick { display: flex; align-items: center; gap: 10px; }
+.twist-pick .select { width: 130px; flex: none; }
+.module-head .twist-pick .lbl::before { display: none; }
 .input {
   flex: 1; min-width: 0; height: 44px; padding: 0 12px;
   background: var(--void); color: var(--lumin); border: 1px solid var(--lumin); border-radius: 0;

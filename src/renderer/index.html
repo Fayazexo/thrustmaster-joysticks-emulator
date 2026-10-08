@@ -58,7 +58,7 @@
         <div class="stage-foot">
           <div class="readout"><span class="lbl">X · roll</span><span class="val" id="x-val">+0.000</span></div>
           <div class="readout"><span class="lbl">Y · pitch</span><span class="val" id="y-val">+0.000</span></div>
-          <div class="readout" id="rz-readout"><span class="lbl">Rz · twist</span><span class="val" id="rz-val">+0.000</span></div>
+          <div class="readout" id="rz-readout"><span class="lbl" id="rz-label">Rz · twist</span><span class="val" id="rz-val">+0.000</span></div>
           <div class="trace wide-only" aria-hidden="true"><canvas id="trace"></canvas></div>
           <div class="readout wide-only"><span class="lbl">Fine</span><span class="num">Hold Shift</span></div>
         </div>
@@ -99,8 +99,15 @@
         </section>
 
         <section class="module needs-link" id="axes-module">
-          <div class="module-head"><span class="lbl">Axes</span></div>
+          <div class="module-head">
+            <span class="lbl">Axes</span>
+            <label class="twist-pick" id="twist-pick" hidden>
+              <span class="lbl">Twist on</span>
+              <span class="select"><select id="twist-axis" aria-label="vJoy axis the twist control drives"></select></span>
+            </label>
+          </div>
           <div id="axes"></div>
+          <p class="note" id="twist-note" hidden>If the simulation turns on a different control than the real joystick's twist, set Twist on to the axis it reads, e.g. Slider.</p>
         </section>
 
         <section class="module needs-link">
